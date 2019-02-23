@@ -12,7 +12,7 @@
     "deploy": "serverless deploy --aws-profile serverless-local",
     "seedMasters": "node seedMasters.js masters-devmanolete",
     "deploy:sit": "serverless deploy --stage sit",
-    "deploy:prod": "serverless deploy --stage prod"
+    "deploy:prod": "serverless deploy --stage prod",
     "test:integration": "TEST_MODE=handler jest ./tests/*"
   },
   "author": "Vicenc Garcia Altes",
