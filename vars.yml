@@ -1,6 +1,6 @@
 dev-user:
   userPoolId: "eu-west-1_EeFYAsCGC"
 sit:
-  userPoolId: "eu-west-1_EeFYAsCGC"
+  userPoolId: "eu-west-1_QIL9HbwkV"
 prod:
-  userPoolId: ""
+  userPoolId: "eu-west-1_QIL9HbwkV"
