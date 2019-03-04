@@ -17,13 +17,15 @@ const handler = epsagon.lambdaWrapper(async (event, context) => {
 
   console.log(event.body);
   const { masterId } = JSON.parse(event.body);
+  const userEmail = event.requestContext.authorizer.claims.email;
 
   const orderId = chance.guid();
   console.log(`enrolling to master ${masterId} with order ID ${orderId}`);
 
   const data = {
     orderId,
-    masterId
+    masterId,
+    userEmail
   };
 
   const params = {
@@ -37,6 +39,9 @@ const handler = epsagon.lambdaWrapper(async (event, context) => {
 
   const response = {
     statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*"
+    },
     body: JSON.stringify({ orderId })
   };
 

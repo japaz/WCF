@@ -9,7 +9,7 @@ const { ssm } = require("middy/middlewares");
 
 const { stage } = process.env;
 
-function generateEmail(orderId, masterId) {
+function generateEmail(orderId, masterId, userEmail) {
   return {
     Source: emailAddress,
     Destination: { ToAddresses: [emailAddress] },
@@ -18,7 +18,7 @@ function generateEmail(orderId, masterId) {
       Body: {
         Text: {
           Charset: "UTF-8",
-          Data: `User has enrolled to master ${masterId} with order id ${orderId}`
+          Data: `User with email ${userEmail} has enrolled to master ${masterId} with order id ${orderId}`
         }
       },
       Subject: {
@@ -39,7 +39,7 @@ const handler = epsagon.lambdaWrapper(async (event, context) => {
   const orderPlaced = JSON.parse(event.Records[0].Sns.Message);
   console.log(orderPlaced);
 
-  const emailParams = generateEmail(orderPlaced.orderId, orderPlaced.masterId);
+  const emailParams = generateEmail(orderPlaced.orderId, orderPlaced.masterId, orderPlaced.userEmail);
   await ses.sendEmail(emailParams).promise();
 
   console.log(
