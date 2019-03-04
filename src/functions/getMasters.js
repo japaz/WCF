@@ -24,7 +24,11 @@ const handler = epsagon.lambdaWrapper(async (event, context) => {
     Limit: count
   };
 
+  console.log(`Req: ${req}`)
+
   const resp = await dynamodb.scan(req).promise();
+
+  console.log(`Resp: ${resp}`)
 
   const res = {
     statusCode: 200,
