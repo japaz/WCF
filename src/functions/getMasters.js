@@ -2,8 +2,19 @@ const AWS = require("aws-sdk");
 
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = process.env.mastersTable;
+const epsagon = require("epsagon");
+const middy = require("middy");
+const { ssm } = require("middy/middlewares");
 
-module.exports.handler = async () => {
+const { stage } = process.env;
+
+const handler = epsagon.lambdaWrapper(async (event, context) => {
+  epsagon.init({
+    token: context.epsagonToken,
+    appName: `${process.env.service}`,
+    metadataOnly: false
+  });
+
   const count = 8;
 
   const req = {
@@ -19,4 +30,15 @@ module.exports.handler = async () => {
   };
 
   return res;
-};
+});
+
+module.exports.handler = middy(handler).use(
+  ssm({
+    cache: true,
+    cacheExpiryInMillis: 3 * 60 * 1000,
+    setToContext: true,
+    names: {
+      epsagonToken: `/pufouniversity/${stage}/epsagonTokenSecure`
+    }
+  })
+);

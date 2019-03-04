@@ -3,6 +3,11 @@
 const AWS = require("aws-sdk");
 const ses = new AWS.SES();
 const { emailAddress } = process.env;
+const epsagon = require("epsagon");
+const middy = require("middy");
+const { ssm } = require("middy/middlewares");
+
+const { stage } = process.env;
 
 function generateEmail(orderId, masterId) {
   return {
@@ -24,7 +29,13 @@ function generateEmail(orderId, masterId) {
   };
 }
 
-module.exports.handler = async event => {
+const handler = epsagon.lambdaWrapper(async (event, context) => {
+  epsagon.init({
+    token: context.epsagonToken,
+    appName: `${process.env.service}`,
+    metadataOnly: false
+  });
+
   const orderPlaced = JSON.parse(event.Records[0].Sns.Message);
   console.log(orderPlaced);
 
@@ -38,4 +49,15 @@ module.exports.handler = async event => {
   );
 
   return "all done";
-};
+});
+
+module.exports.handler = middy(handler).use(
+  ssm({
+    cache: true,
+    cacheExpiryInMillis: 3 * 60 * 1000,
+    setToContext: true,
+    names: {
+      epsagonToken: `/pufouniversity/${stage}/epsagonTokenSecure`
+    }
+  })
+);

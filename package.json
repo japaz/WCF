@@ -35,6 +35,8 @@
   },
   "dependencies": {
     "aws-sdk": "^2.409.0",
-    "chance": "^1.0.18"
+    "chance": "^1.0.18",
+    "epsagon": "^1.14.4",
+    "middy": "^0.22.1"
   }
 }

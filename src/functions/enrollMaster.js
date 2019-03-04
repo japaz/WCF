@@ -1,8 +1,20 @@
 const AWS = require("aws-sdk");
 const chance = require("chance").Chance();
 const sns = new AWS.SNS();
+const epsagon = require("epsagon");
+const middy = require("middy");
+const { ssm } = require("middy/middlewares");
 
-module.exports.handler = async event => {
+const { stage } = process.env;
+
+
+const handler = epsagon.lambdaWrapper(async (event, context) => {
+  epsagon.init({
+    token: context.epsagonToken,
+    appName: `${process.env.service}`,
+    metadataOnly: false
+  });
+
   console.log(event.body);
   const { masterId } = JSON.parse(event.body);
 
@@ -29,4 +41,15 @@ module.exports.handler = async event => {
   };
 
   return response;
-};
+});
+
+module.exports.handler = middy(handler).use(
+  ssm({
+    cache: true,
+    cacheExpiryInMillis: 3 * 60 * 1000,
+    setToContext: true,
+    names: {
+      epsagonToken: `/pufouniversity/${stage}/epsagonTokenSecure`
+    }
+  })
+);
