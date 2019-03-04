@@ -1,4 +1,5 @@
 service: pufouniversity
+
 plugins:
   - serverless-pseudo-parameters
   - serverless-iam-roles-per-function
@@ -18,6 +19,8 @@ custom:
   mastersTable: masters-${self:custom.stage}
   enrolMasterSnsTopicName: enrollMasterEvents-${self:custom.stage}
   enrolMasterSnsTopic: arn:aws:sns:#{AWS::Region}:#{AWS::AccountId}:${self:custom.enrolMasterSnsTopicName}
+  defaultVarsStage: dev-user
+  vars: ${file(./vars.yml):${opt:stage, self:custom.defaultVarsStage}}
  
 functions:
   getMasters:
@@ -35,6 +38,7 @@ functions:
       - Effect: Allow
         Action: ssm:GetParameters*
         Resource: arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/pufouniversity/*
+
   enrollMaster:
     handler: src/functions/enrollMaster.handler
     events:
@@ -50,6 +54,7 @@ functions:
       - Effect: Allow
         Action: ssm:GetParameters*
         Resource: arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/pufouniversity/*
+
   notifyUniversity:
     handler: src/functions/notifyUniversity.handler
     events:
@@ -66,17 +71,24 @@ functions:
         Action: ssm:GetParameters*
         Resource: arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/pufouniversity/*
 
-resources:
-  Resources:
-    MastersTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:custom.mastersTable}
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: N
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-        BillingMode: PAY_PER_REQUEST
+  getMasterDetails:
+    handler: src/functions/getMaster.handler
+    events:
+      - http:
+          path: api/master/{id}
+          method: get
+          authorizer:
+            arn: arn:aws:cognito-idp:#{AWS::Region}:#{AWS::AccountId}:userpool/${self:custom.vars.userPoolId}
+    environment:
+      mastersTable: ${self:custom.mastersTable}
+    iamRoleStatements:
+      - Effect: Allow
+        Action: dynamodb:query
+        Resource: arn:aws:dynamodb:#{AWS::Region}:#{AWS::AccountId}:table/${self:custom.mastersTable}
+      - Effect: Allow
+        Action: ssm:GetParameters*
+        Resource: arn:aws:ssm:#{AWS::Region}:#{AWS::AccountId}:parameter/pufouniversity/*
 
+resources:
+   - ${file(resources/masters-dynamodb-table.yml)}
+   - ${file(resources/cognito-user-pool.yml)}

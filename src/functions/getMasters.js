@@ -8,14 +8,16 @@ const { ssm } = require("middy/middlewares");
 
 const { stage } = process.env;
 
+console.log(`TableName: ${tableName} | stage: ${stage}`);
+
 const handler = epsagon.lambdaWrapper(async (event, context) => {
+  const count = 8;
+
   epsagon.init({
     token: context.epsagonToken,
     appName: `${process.env.service}`,
     metadataOnly: false
   });
-
-  const count = 8;
 
   const req = {
     TableName: tableName,
