@@ -41,6 +41,7 @@ async function viaHandler(functionPath, event) {
   return new Promise(async (resolve, reject) => {
     const context = {};
     const callback = (something, response) => {
+  console.log(`something ${something}`)
   console.log(`response ${response}`)
       response.body = JSON.parse(response.body);
       resolve(response);
