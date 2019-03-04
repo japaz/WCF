@@ -35,10 +35,13 @@ async function viaHandler(functionPath, event) {
   // eslint-disable-next-line import/no-dynamic-require
   const handler = require(`../../src/functions/${functionPath}`);
 
+  console.log(`handler ${handler}`)
+
   // due to https://github.com/middyjs/middy/issues/198
   return new Promise(async (resolve, reject) => {
     const context = {};
     const callback = (something, response) => {
+  console.log(`response ${response}`)
       response.body = JSON.parse(response.body);
       resolve(response);
     };
